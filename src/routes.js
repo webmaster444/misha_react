@@ -17,6 +17,7 @@ import Homepage from './routes/Homepage';
 import Dashboard from './routes/Dashboard';
 import Contact from './routes/Contact';
 import Profile from './routes/Profile';
+import DataBrowser from './routes/DataBrowser';
 
 import Inbox from './routes/Inbox';
 import Mail from './routes/Mail';
@@ -106,6 +107,7 @@ class App extends React.Component {
 const routes = (
   <Route component={App}>
     <Route path='dashboard' component={Dashboard} />
+    <Route path='databrowser' component={DataBrowser} />
     <Route path='contact' component={Contact} />
     <Route path='profile' component={Profile} />
     <Route path='mailbox/inbox' component={Inbox} />

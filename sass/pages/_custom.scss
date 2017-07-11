@@ -196,3 +196,11 @@ html.default body #sidebar .sidebar-controls-container > .sidebar-controls > .si
 		}
 	}
 }
+
+.table_panel_wrapper{
+	min-height: 400px;
+	#secondary_dropdown + ul, #primary_dropdown + ul, #teritary_dropdown +ul{
+		overflow-y:scroll;
+		max-height: 400px;
+	}
+}
