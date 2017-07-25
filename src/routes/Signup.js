@@ -1,6 +1,6 @@
 import React from 'react';
 import classNames from 'classnames';
-import { Link, withRouter } from 'react-router';
+import { Link, withRouter,browserHistory} from 'react-router';
 
 import {
   Row,
@@ -29,8 +29,55 @@ export default class Signup extends React.Component {
     this.props.router.goBack();
   }
 
+  signup(e){
+    e.preventDefault();
+    e.stopPropagation();
+    var un = $('#username').val();
+    var pw = $('#password').val();
+    var t  = $('#paycode').val();
+    var e  = $('#email').val();
+    $.ajax({
+      url: 'https://ceres.link/api/register/data:un='+un+',pw='+pw+',t='+t+',e='+e+',fn="",ln="",s="Male",dobm="",dobd="",doby=""',
+      dataType: 'json',
+      type: 'GET',
+      success:function(data){
+        console.log(data);
+        if(data.status=='User Registration Successful'){
+          localStorage.setItem('api_key', data.key);
+          browserHistory.push('ltr/dashboard');
+        }else{
+          this.errorNotification(data);
+        }
+      }.bind(this),
+      error:function(error){
+        console.log('error');
+        console.log(error);
+      }
+    })
+  }
+  
+  errorNotification(str) {
+    Messenger().post({     
+      message: str,
+      showCloseButton: true
+    });
+  }
   componentDidMount() {
     $('html').addClass('authentication');
+  //   $.ajax({
+  //     url: 'https://ceres.link/api/preregister/data:email=rkxld3j@dispostable.com',
+  //     dataType: 'json',
+  //     type: 'GET',
+  //     success:function(data){
+  //       console.log(data);
+  //     }.bind(this),
+  //     error:function(error){
+  //       console.log(error);
+  //     }
+  //   })
+    Messenger.options = {
+      theme: 'flat'
+    };
   }
 
   componentWillUnmount() {
@@ -59,13 +106,21 @@ export default class Signup extends React.Component {
                         </div>
                         <div>
                           <div style={{padding: 25, paddingTop: 0, paddingBottom: 0, margin: 'auto', marginBottom: 25, marginTop: 25}}>
-                            <Form onSubmit={::this.back}>
+                            <Form onSubmit={::this.signup}>
                               <FormGroup controlId='username'>
                                 <InputGroup bsSize='large'>
                                   <InputGroup.Addon>
                                     <Icon glyph='icon-fontello-user' />
                                   </InputGroup.Addon>
                                   <FormControl autoFocus type='text' className='border-focus-blue' placeholder='Username' />
+                                </InputGroup>
+                              </FormGroup>
+                              <FormGroup controlId='email'>
+                                <InputGroup bsSize='large'>
+                                  <InputGroup.Addon>
+                                    <Icon glyph='icon-fontello-email' />
+                                  </InputGroup.Addon>
+                                  <FormControl autoFocus type='email' className='border-focus-blue' placeholder='Email Address' />
                                 </InputGroup>
                               </FormGroup>
                               <FormGroup controlId='password'>
@@ -76,7 +131,7 @@ export default class Signup extends React.Component {
                                   <FormControl type='password' className='border-focus-blue' placeholder='Password' />
                                 </InputGroup>
                               </FormGroup>
-                              <FormGroup controlId='password'>
+                              <FormGroup controlId='confirm_password'>
                                 <InputGroup bsSize='large'>
                                   <InputGroup.Addon>
                                     <Icon glyph='icon-fontello-key' />
@@ -85,7 +140,7 @@ export default class Signup extends React.Component {
                                 </InputGroup>
                               </FormGroup>
                               
-                              <FormGroup controlId='username'>
+                              <FormGroup controlId='paycode'>
                                 <InputGroup bsSize='large'>
                                   <InputGroup.Addon>
                                     <Icon glyph='icon-fontello-dot-3' />
@@ -98,7 +153,7 @@ export default class Signup extends React.Component {
                                 <Grid>
                                   <Row>
                                     <Col xs={12} collapseLeft collapseRight>
-                                      <Button type='submit' outlined lg bsStyle='blue' block onClick={::this.back}>Create account</Button>
+                                      <Button type='submit' outlined lg bsStyle='blue' block onClick={::this.signup}>Create account</Button>
                                       <div className='text-center' style={{marginTop: 25}}>
                                         Already have an account? <Link to={::this.getPath('login')}>Login</Link>
                                       </div>

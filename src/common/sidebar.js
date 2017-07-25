@@ -5,7 +5,7 @@ import {
   SidebarControls, SidebarControlBtn,
   LoremIpsum, Grid, Row, Col, FormControl,
   Label, Progress, Icon,
-  SidebarDivider
+  SidebarDivider, DropdownButton,MenuItem
 } from '@sketchpixy/rubix';
 
 import { Link, withRouter } from 'react-router';
@@ -17,6 +17,23 @@ import NotificationsComponent from './notifications';
 
 @withRouter
 class ApplicationSidebar extends React.Component {
+  constructor(props){
+    super(props);
+    this.state = {
+      pri_key:[],
+      pri_active_key:'',
+      sec_key:[],
+      sec_active_key:'',
+      third_key:[],
+      third_active_key:'',
+      meta_data:{},
+      table_data:{},
+      table_data_ready:false,
+      table_data_header:[],
+      table_data_content:[],
+    };
+  }
+
   handleChange(e) {
     this._nav.search(e.target.value);
   }
@@ -27,7 +44,106 @@ class ApplicationSidebar extends React.Component {
     return path;
   }
 
+  componentDidMount() {
+    this.UserList();
+  }
+
+  UserList(){
+    let api_key = localStorage.getItem('api_key');
+    $.ajax({
+      url: 'https://ceres.link/api/graphmeta/api_key='+api_key,
+      dataType: 'json',
+      type: 'GET',
+      success:function(data){
+        this.setState({
+          pri_key:Object.keys(data),
+          meta_data:data
+        })
+      }.bind(this),
+      error:function(error){
+        console.log(error);
+      }
+    })
+  }
+
+  handleClick(element,nth){
+    let api_key = localStorage.getItem('api_key');
+    let meta_data = this.state.meta_data;
+    if(nth=='primary'){
+      this.setState({pri_active_key:element});
+      this.setState({sec_key:meta_data[element]});
+      var tmp_2nd = meta_data[element];
+      this.setState({sec_key:Object.keys(tmp_2nd)});
+      $.ajax({
+        url: 'https://ceres.link/api/update_pk/api_key='+api_key+';data:'+element,
+        dataType: 'json',
+        type: 'GET',
+        success:function(data){
+          console.log('pk set succeed');
+          this.setState({sec_active_key:'',third_active_key:''});
+          this.props.dataBrowserClickced(false,this.state.pri_active_key,this.state.sec_active_key,this.state.third_active_key);
+        }.bind(this),
+        error:function(error){
+          console.log(error);
+        }
+      })
+    }else if(nth=='second'){
+      this.setState({sec_active_key:element});
+      let ts = this.state.pri_active_key;
+      let third_array = meta_data[ts][element];
+      this.setState({third_key:third_array});
+      $.ajax({
+        url: 'https://ceres.link/api/update_sk/api_key='+api_key+';data:'+element,
+        dataType: 'json',
+        type: 'GET',
+        success:function(data){
+          this.setState({third_active_key:''});
+          this.props.dataBrowserClickced(false,this.state.pri_active_key,this.state.sec_active_key,this.state.third_active_key);
+          console.log('sk set succeed');
+        }.bind(this),
+        error:function(error){
+          console.log(error);
+        }
+      })
+    }else if(nth=='third'){
+      this.setState({third_active_key:element});
+      $.ajax({
+        url: 'https://ceres.link/api/update_ck/api_key='+api_key+';data:'+element,
+        dataType: 'json',
+        type: 'GET',
+        success:function(data){
+          this.props.dataBrowserClickced(true,this.state.pri_active_key,this.state.sec_active_key,this.state.third_active_key);
+        }.bind(this),
+        error:function(error){
+          console.log(error);
+        }
+      })
+    }
+  }
+
   render() {
+    let _this = this;
+    let pri_title = '', sec_title='',third_title='';
+    if(this.state.pri_active_key ==''){
+      pri_title = 'Primary Key';
+    }else{
+      pri_title = this.state.pri_active_key;
+    }
+
+    if(this.state.sec_active_key ==''){
+      sec_title = 'Secondary Key';
+    }else{
+      sec_title = this.state.sec_active_key;
+    }
+
+    if(this.state.third_active_key ==''){
+      third_title = 'Tertiary Key';
+    }else{
+      third_title = this.state.third_active_key;
+    }
+
+    const table_data_ready = this.state.table_data_ready; 
+
     return (
       <div>
         <Grid>
@@ -41,84 +157,36 @@ class ApplicationSidebar extends React.Component {
                   <div className='sidebar-header'>PAGES</div>
 
                   <SidebarNavItem glyph='icon-fontello-gauge' name='Dashboard' href={::this.getPath('dashboard')} />
-                  <SidebarNavItem glyph='icon-feather-mail' name={<span>Mailbox <Label className='bg-darkgreen45 fg-white'>3</Label></span>}>
-                    <SidebarNav>
-                      <SidebarNavItem glyph='icon-feather-inbox' name='Inbox' href={::this.getPath('mailbox/inbox')} />
-                      <SidebarNavItem glyph='icon-outlined-mail-open' name='Mail' href={::this.getPath('mailbox/mail')} />
-                      <SidebarNavItem glyph='icon-dripicons-message' name='Compose' href={::this.getPath('mailbox/compose')} />
-                    </SidebarNav>
-                  </SidebarNavItem>
+                  <SidebarNavItem glyph='icon-fontello-gauge' name='ExecDashboard' href={::this.getPath('execdashboard')} />
                   <SidebarNavItem glyph='icon-pixelvicon-photo-gallery' name='Gallery' href={::this.getPath('gallery')} />
                   <SidebarNavItem glyph='icon-feather-share' name='Social' href={::this.getPath('social')} />
-                  <SidebarNavItem glyph='icon-stroke-gap-icons-Blog' name={<span>Blog <Label className='bg-darkcyan fg-white'>2</Label></span>}>
-                    <SidebarNav>
-                      <SidebarNavItem glyph='icon-feather-layout' name='Posts' href={::this.getPath('blog/posts')} />
-                      <SidebarNavItem glyph='icon-feather-paper' name='Single Post' href={::this.getPath('blog/post')} />
-                    </SidebarNav>
-                  </SidebarNavItem>
-
                   <SidebarDivider />
 
                   { /** Components Section */ }
-                  <div className='sidebar-header'>COMPONENTS</div>
+                  <div className='sidebar-header'>DataBrowser</div>
 
-                  <SidebarNavItem glyph='icon-simple-line-icons-layers float-right-rtl' name='Panels' href={::this.getPath('panels')} />
-                  <SidebarNavItem glyph='icon-ikons-bar-chart-2 float-right-rtl' name={<span>Charts <Label className='bg-brown50 fg-white'>4</Label></span>}>
-                    <SidebarNav>
-                      <SidebarNavItem glyph='icon-fontello-chart-area' name='Rubix Charts'>
-                        <SidebarNav>
-                          <SidebarNavItem name='Line Series' href={::this.getPath('charts/rubix/line')} />
-                          <SidebarNavItem name='Area Series' href={::this.getPath('charts/rubix/area')} />
-                          <SidebarNavItem name='Bar + Column Series' href={::this.getPath('charts/rubix/barcol')} />
-                          <SidebarNavItem name='Mixed Series' href={::this.getPath('charts/rubix/mixed')} />
-                          <SidebarNavItem name='Pie + Donut Series' href={::this.getPath('charts/rubix/piedonut')} />
-                        </SidebarNav>
-                      </SidebarNavItem>
-                      <SidebarNavItem glyph='icon-simple-line-icons-graph' name='Chart.JS' href={::this.getPath('charts/chartjs')} />
-                      <SidebarNavItem glyph='icon-dripicons-graph-line' name='C3.JS' href={::this.getPath('charts/c3js')} />
-                      <SidebarNavItem glyph='icon-feather-pie-graph' name='Morris.JS' href={::this.getPath('charts/morrisjs')} />
-                    </SidebarNav>
-                  </SidebarNavItem>
-                  <SidebarNavItem href={::this.getPath('timeline')} glyph='icon-ikons-time' name='Static Timeline' />
-                  <SidebarNavItem href={::this.getPath('interactive-timeline')} glyph='icon-fontello-back-in-time' name='Interactive Timeline' />
-                  <SidebarNavItem href={::this.getPath('codemirror')} glyph='icon-dripicons-code' name='Codemirror' />
-                  <SidebarNavItem href={::this.getPath('maps')} glyph='icon-ikons-pin-2' name='Maps' />
-                  <SidebarNavItem href={::this.getPath('editor')} glyph='icon-simple-line-icons-note' name='Editor' />
-                  <SidebarNavItem glyph='icon-feather-toggle' name={<span>UI Elements <Label className='bg-deepred fg-white'>7</Label></span>}>
-                    <SidebarNav>
-                      <SidebarNavItem href={::this.getPath('ui-elements/buttons')} glyph='icon-mfizz-oracle' name='Buttons' />
-                      <SidebarNavItem href={::this.getPath('ui-elements/dropdowns')} glyph='icon-outlined-arrow-down' name='Dropdowns' />
-                      <SidebarNavItem href={::this.getPath('ui-elements/tabs-and-navs')} glyph='icon-nargela-navigation' name='Tabs &amp; Navs' />
-                      <SidebarNavItem href={::this.getPath('ui-elements/sliders')} glyph='icon-outlined-three-stripes-horiz' name='Sliders' />
-                      <SidebarNavItem href={::this.getPath('ui-elements/knobs')} glyph='icon-ikons-chart-3-8' name='Knobs' />
-                      <SidebarNavItem href={::this.getPath('ui-elements/modals')} glyph='icon-pixelvicon-browser-1' name='Modals' />
-                      <SidebarNavItem href={::this.getPath('ui-elements/messenger')} glyph='icon-dripicons-message' name='Messenger' />
-                    </SidebarNav>
-                  </SidebarNavItem>
-                  <SidebarNavItem glyph='icon-stroke-gap-icons-Files float-right-rtl' name={<span>Forms <Label className='bg-danger fg-white'>3</Label></span>}>
-                    <SidebarNav>
-                      <SidebarNavItem glyph='icon-mfizz-fire-alt' href={::this.getPath('forms/controls')} name='Controls' />
-                      <SidebarNavItem glyph='icon-stroke-gap-icons-Edit' href={::this.getPath('forms/x-editable')} name='X-Editable' />
-                      <SidebarNavItem glyph='icon-simple-line-icons-magic-wand' href={::this.getPath('forms/wizard')} name='Wizard' />
-                    </SidebarNav>
-                  </SidebarNavItem>
-                  <SidebarNavItem glyph='icon-fontello-table' name={<span>Tables <Label className='bg-blue fg-white'>3</Label></span>}>
-                    <SidebarNav>
-                      <SidebarNavItem href={::this.getPath('tables/bootstrap-tables')} glyph='icon-fontello-th-thumb' name='Bootstrap Tables' />
-                      <SidebarNavItem href={::this.getPath('tables/datatables')} glyph='icon-fontello-th-2' name='Datatables' />
-                      <SidebarNavItem href={::this.getPath('tables/tablesaw')} glyph='icon-fontello-view-mode' name='Tablesaw' />
-                    </SidebarNav>
-                  </SidebarNavItem>
-                  <SidebarNavItem href={::this.getPath('grid')} glyph='icon-ikons-grid-1 float-right-rtl' name='Grid' />
-                  <SidebarNavItem href={::this.getPath('calendar')} glyph='icon-fontello-calendar-alt' name='Calendar' />
-                  <SidebarNavItem glyph='icon-fontello-folder-open-empty' name={<span>File Utilities <Label className='bg-orange fg-darkbrown'>2</Label></span>}>
-                    <SidebarNav>
-                      <SidebarNavItem href={::this.getPath('file-utilities/dropzone')} glyph='icon-stroke-gap-icons-Download' name='Dropzone' />
-                      <SidebarNavItem href={::this.getPath('file-utilities/crop')} glyph='icon-ikons-crop' name='Image Cropping' />
-                    </SidebarNav>
-                  </SidebarNavItem>
-                  <SidebarNavItem href={::this.getPath('fonts')} glyph='icon-fontello-fontsize' name='Fonts' />
+                  <Col xs={12}>
+                  <DropdownButton bsStyle='darkgreen45' title={pri_title} id='primary_dropdown'>
+                    {this.state.pri_key.map(function(element,i){
+                      return (<MenuItem key={i} eventKey={i} onSelect={()=>_this.handleClick(element,'primary')}>{element}</MenuItem>);
+                    })}
+                  </DropdownButton>
+                  </Col>
 
+                  <Col xs={12}>
+                  <DropdownButton bsStyle='darkgreen45' title={sec_title} id='secondary_dropdown'>
+                    {this.state.sec_key.map(function(element,i){
+                      return (<MenuItem key={i} eventKey={i} onSelect={()=>_this.handleClick(element,'second')}>{element}</MenuItem>);
+                    })}
+                  </DropdownButton>
+                  </Col>
+                  <Col xs={12}>
+                  <DropdownButton bsStyle='darkgreen45' title={third_title} id='teritary_dropdown'>
+                    {this.state.third_key.map(function(element,i){
+                      return (<MenuItem key={i} eventKey={i} onSelect={()=>_this.handleClick(element,'third')}>{element}</MenuItem>);
+                    })}
+                  </DropdownButton>
+                  </Col>
                   <SidebarDivider />
 
                   { /** Extras Section */ }
@@ -128,21 +196,6 @@ class ApplicationSidebar extends React.Component {
                   <SidebarNavItem glyph='icon-fontello-contacts' name='Contact Us' href={::this.getPath('contact')} />
                   <SidebarNavItem glyph='icon-outlined-profile' name='Profile' href={::this.getPath('profile')} />
                   <SidebarNavItem glyph='icon-mfizz-database' name='DataBrowser' href={::this.getPath('databrowser')} />
-                  <SidebarNavItem glyph='icon-ikons-lock' name='Lock Page' href={::this.getPath('lock')} />
-
-                  <SidebarNavItem glyph='icon-dripicons-document' name='Invoice' href={::this.getPath('invoice')} />
-                  <SidebarNavItem glyph='icon-feather-tag icon-rotate-135' name='Pricing Tables' href={::this.getPath('pricing')} />
-
-                  <SidebarDivider />
-
-                  { /** Documentation Section */ }
-                  <div className='sidebar-header'>DOCUMENTATION</div>
-                  <li className='sidebar-nav-item' style={{display: 'block', height: 45}}>
-                    <a href='http://rubix-docs.sketchpixy.com' style={{height: 45}}>
-                      <Icon glyph='icon-fontello-install' />
-                      <span className='name'>Documentation</span>
-                    </a>
-                  </li>
                 </SidebarNav>
                 <br />
                 <br />
@@ -179,6 +232,10 @@ export default class SidebarContainer extends React.Component {
     return path;
   }
 
+  handleLangChange(tbl_ready,pk,sk,ck) {
+      console.log(tbl_ready);
+      this.props.onSelectLanguage(tbl_ready,pk,sk,ck);            
+  }
   render() {
     return (
       <div id='sidebar'>
@@ -209,7 +266,7 @@ export default class SidebarContainer extends React.Component {
         </SidebarControls>
         <div id='sidebar-container'>
           <Sidebar sidebar={0}>
-            <ApplicationSidebar />
+            <ApplicationSidebar dataBrowserClickced={this.handleLangChange.bind(this)}/>
           </Sidebar>
           <Sidebar sidebar={1}>
             <ChatComponent />

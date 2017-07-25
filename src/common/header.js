@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import classNames from 'classnames';
 
-import { Link, withRouter } from 'react-router';
+import { Link, withRouter,browserHistory } from 'react-router';
 
 import l20n, { Entity } from '@sketchpixy/rubix/lib/L20n';
 
@@ -232,12 +232,12 @@ class BodyLayout extends React.Component {
     if(!value) return;
     if(value === 'fixed-body') {
       $('html').removeClass('static');
-      localStorage.setItem('bodyLayout', 'fixed-body');
+      sessionStorage.setItem('bodyLayout', 'fixed-body');
       Dispatcher.publish('sidebar:reinitialize');
       this.setState({ fixedLayout: true });
     } else if(value === 'static-body') {
       $('html').addClass('static');
-      localStorage.setItem('bodyLayout', 'static-body');
+      sessionStorage.setItem('bodyLayout', 'static-body');
       Dispatcher.publish('sidebar:destroy');
       this.setState({ fixedLayout: false });
     }
@@ -246,7 +246,7 @@ class BodyLayout extends React.Component {
     this.bodyLayoutRadioChange(e.target.value);
   }
   componentDidMount() {
-    this.bodyLayoutRadioChange(localStorage.getItem('bodyLayout'));
+    this.bodyLayoutRadioChange(sessionStorage.getItem('bodyLayout'));
   }
   render() {
     let { fixedLayout } = this.state;
@@ -341,11 +341,11 @@ class SettingsMenu extends React.Component {
 
   handleViewportChange(eventKey) {
     if (eventKey === 'fluid') {
-      localStorage.setItem('settingsMenu', 'fluid');
+      sessionStorage.setItem('settingsMenu', 'fluid');
       $('html').removeClass('boxed');
       this.setState({ fluidLayout: true })
     } else {
-      localStorage.setItem('settingsMenu', 'boxed');
+      sessionStorage.setItem('settingsMenu', 'boxed');
       $('html').addClass('boxed');
       this.setState({ fluidLayout: false })
     }
@@ -355,7 +355,7 @@ class SettingsMenu extends React.Component {
   }
 
   componentDidMount() {
-    let item = localStorage.getItem('settingsMenu') || 'fluid';
+    let item = sessionStorage.getItem('settingsMenu') || 'fluid';
     localStorage.setItem('settingsMenu', item);
 
     this.handleViewportChange(item);
@@ -612,7 +612,20 @@ class HeaderNavigation extends React.Component {
   }
 
   handleLogout(e) {
-    this.props.router.push('/');
+    let api_key = localStorage.getItem('api_key');
+    $.ajax({
+      url: 'https://ceres.link/api/logout/api_key='+api_key,
+      dataType: 'json',
+      type: 'GET',
+      success:function(data){
+        console.log('loggedout');
+        sessionStorage.removeItem('api_key');
+        browserHistory.push('/ltr/login');
+      }.bind(this),
+      error:function(error){
+        console.log(error);
+      }
+    })
   }
 
   getPath(path) {

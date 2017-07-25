@@ -65,7 +65,7 @@
 /******/ 	}
 /******/ 	
 /******/ 	var hotApplyOnUpdate = true;
-/******/ 	var hotCurrentHash = "c332b9e5ba964a0bb338"; // eslint-disable-line no-unused-vars
+/******/ 	var hotCurrentHash = "414749cdde61ba57f568"; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentParents = []; // eslint-disable-line no-unused-vars
 /******/ 	
@@ -584,13 +584,13 @@
 /***/ 0:
 /***/ function(module, exports, __webpack_require__) {
 
-	__webpack_require__(1050);
-	module.exports = __webpack_require__(935);
+	__webpack_require__(994);
+	module.exports = __webpack_require__(879);
 
 
 /***/ },
 
-/***/ 935:
+/***/ 879:
 /***/ function(module, exports, __webpack_require__) {
 
 	/*
@@ -644,7 +644,7 @@
 						check();
 					}
 
-					__webpack_require__(936)(updatedModules, renewedModules);
+					__webpack_require__(880)(updatedModules, renewedModules);
 
 					if(upToDate()) {
 						console.log("[HMR] App is up to date.");
@@ -674,7 +674,7 @@
 
 /***/ },
 
-/***/ 936:
+/***/ 880:
 /***/ function(module, exports) {
 
 	/*
@@ -706,7 +706,7 @@
 
 /***/ },
 
-/***/ 1050:
+/***/ 994:
 /***/ function(module, exports) {
 
 	// empty (null-loader)

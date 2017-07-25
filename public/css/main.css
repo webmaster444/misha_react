@@ -3179,3 +3179,6 @@ html.default body #sidebar .sidebar-controls-container > .sidebar-controls > .si
     margin-right: 5px; }
   .profile .profile_content .send_btn {
     margin-top: 15px; }
+
+#primary_dropdown, #secondary_dropdown, #teritary_dropdown {
+  margin: 5px 0px; }
